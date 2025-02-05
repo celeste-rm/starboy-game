@@ -101,13 +101,24 @@ else:
 # Display current player turn
 st.write(f"**It's {st.session_state['current_turn']}'s turn to play offense!**")
 
-# Get offense and defense choices with names
-if st.session_state['current_turn'] == st.session_state['player1_name'] or game_mode == "Play with a Friend":
-    offense_choice = st.number_input(f"{st.session_state['current_turn']}, pick your offense number (1-4):", min_value=1, max_value=4, step=1)
-else:
-    offense_choice = random.randint(1, 4)
+# When Player 1 (human) is on offense
+if st.session_state['current_turn'] == st.session_state['player1_name']:
+    offense_choice = st.number_input(f"{st.session_state['player1_name']}, pick your offense number (1-4):", min_value=1, max_value=4, step=1)
+    
+    # If playing against the computer, the computer picks defense automatically
+    if game_mode == "Play Against Computer":
+        defense_choice = random.randint(1, 4)
+    else:
+        defense_choice = st.number_input(f"{st.session_state['player2_name']}, pick your defense number (1-4):", min_value=1, max_value=4, step=1)
 
-defense_choice = random.randint(1, 4) if st.session_state['current_turn'] == st.session_state['player1_name'] and game_mode == "Play Against Computer" else st.number_input(f"{st.session_state['player2_name']}, pick your defense number (1-4):", min_value=1, max_value=4, step=1)
+# When it's Player 2's (friend or computer) turn to play offense
+else:
+    if game_mode == "Play with a Friend":
+        offense_choice = st.number_input(f"{st.session_state['player2_name']}, pick your offense number (1-4):", min_value=1, max_value=4, step=1)
+        defense_choice = st.number_input(f"{st.session_state['player1_name']}, pick your defense number (1-4):", min_value=1, max_value=4, step=1)
+    else:
+        offense_choice = random.randint(1, 4)  # Computer picks offense automatically
+        defense_choice = st.number_input(f"{st.session_state['player1_name']}, pick your defense number (1-4):", min_value=1, max_value=4, step=1)
 
 # Play button logic
 if st.button("Play!"):
