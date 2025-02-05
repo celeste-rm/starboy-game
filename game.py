@@ -56,7 +56,7 @@ def play_round(offense_player, defense_player, is_computer=False):
             offense_choice = int(input(f"{offense_player}, pick your number (1-4): "))
 
         if is_computer and defense_player == 'Computer':
-            defense_choice = computer_defense_strategy()
+            defense_choice = computer_defense_strategy(yards)
         else:
             defense_choice = int(input(f"{defense_player}, pick your number (1-4): "))
 
@@ -64,7 +64,7 @@ def play_round(offense_player, defense_player, is_computer=False):
         print(f"Offense picked {offense_choice}, Defense picked {defense_choice}. Result: {result}")
 
         if result == 'Intercept':
-            result_log.append('p' + '\\' * (3 - tries))
+            result_log.append('p' + "'" * (3 - tries))
             print(f"Current Scoreboard: {offense_player}: {' '.join(result_log)}")
             break
         elif result == 'Complete':
@@ -75,35 +75,54 @@ def play_round(offense_player, defense_player, is_computer=False):
                 print(f"Current Scoreboard: {offense_player}: {' '.join(result_log)}")
                 break
             elif yards >= 4:
-                print(f"Touchdown completed at {yards} yards!")
-                result_log.append('1' + '\\' * (3 - tries))
+                print(f"Touchdown completed at {yards} yards in {tries} tries!")
+                result_log.append('1' + "'" * (3 - tries))
                 print(f"Current Scoreboard: {offense_player}: {' '.join(result_log)}")
                 break
         else:
             if tries == 3:
+                print("Player failed to score a touchdown :(")
                 result_log.append('-')
                 print(f"Current Scoreboard: {offense_player}: {' '.join(result_log)}")
 
     return result_log
 
-
 def computer_strategy(current_yards):
-    # Basic strategy: Pick the smallest number to avoid overshooting if close to 4
-    if current_yards >= 4:
-        return 1
-    elif current_yards == 3:
-        return 1
+    # Define possible moves based on current yardage to avoid going over 5 yards
+    possible_moves = [i for i in range(1, 5) if current_yards + i <= 5]
+    
+    # Evaluate the expected success for each possible move
+    move_success_probabilities = []
+    for move in possible_moves:
+        # Assume the player randomly picks defense moves 1 to 4
+        avg_success_rate = sum(probabilities[(move, d)]['complete'] for d in range(1, 5)) / 4
+        move_success_probabilities.append((move, avg_success_rate))
+    
+    # Choose the move with the highest average success rate
+    best_move = max(move_success_probabilities, key=lambda x: x[1])[0]
+    
+    return best_move
+
+def computer_defense_strategy(opponent_yards):
+    # Predict opponent's behavior: likely to pick smaller numbers if close to touchdown
+    if opponent_yards >= 4:
+        predicted_offense_choices = [1, 2]  # Opponent will avoid going over
+    elif opponent_yards == 3:
+        predicted_offense_choices = [1, 2]  # Safer plays to avoid overshooting
     else:
-        return random.randint(1, 4)
+        predicted_offense_choices = [3, 4]  # Riskier plays when there's more yardage to cover
+    
+    # Defense mirrors the most probable offense choice to maximize interception
+    defense_choice = random.choice(predicted_offense_choices)
+    
+    return defense_choice
 
-
-def computer_defense_strategy():
-    return random.randint(1, 4)
-
-def calculate_final_score(results):
-    touchdowns = sum(1 for result in results if '1' in result)  # Count touchdowns
-    marks = sum(result.count('\'') for result in results if 'p' not in result)  # Count marks, excluding interceptions
-    return f"{touchdowns}" + "'" * marks
+def calculate_final_score(results, opponent_results):
+    touchdowns = sum(1 for result in results if '1' in result)
+    marks = sum(result.count("'") for result in results if 'p' not in result)
+    opponent_interception_marks = sum(result.count("'") for result in opponent_results if result.startswith('p'))
+    total_marks = marks + opponent_interception_marks
+    return f"{touchdowns}" + "'" * total_marks
 
 def main():
     print("Welcome to the Football Probability Game!")
@@ -129,8 +148,8 @@ def main():
         print(f"\n{player2}'s turn as offense (Round {i+1})")
         player2_results += play_round(player2, player1, is_computer)
 
-    final_score_p1 = calculate_final_score(player1_results)
-    final_score_p2 = calculate_final_score(player2_results)
+    final_score_p1 = calculate_final_score(player1_results, player2_results)
+    final_score_p2 = calculate_final_score(player2_results, player1_results)
     
     print(f"\nFinal Scores:")
     print(f"{player1}: {' '.join(player1_results)} → Final Score: {final_score_p1}")
@@ -139,3 +158,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
