@@ -69,15 +69,23 @@ def switch_turn():
     st.session_state['yards'] = 0
     st.session_state['attempts'] = 0
 
+# Ensure player names are initialized before resetting the game
+if 'player1_name' not in st.session_state:
+    st.session_state['player1_name'] = "Player 1"
+if 'player2_name' not in st.session_state:
+    st.session_state['player2_name'] = "Computer"
+
 def reset_game():
     st.session_state['player1_results'] = []
     st.session_state['player2_results'] = []
     st.session_state['yards'] = 0
     st.session_state['attempts'] = 0
     st.session_state['rounds_played'] = 0
+    
+    # Default to player1's turn using initialized name
     st.session_state['current_turn'] = st.session_state['player1_name']
 
-# Initialize session state
+# Initialize session state if not already
 if 'player1_results' not in st.session_state:
     reset_game()
 
