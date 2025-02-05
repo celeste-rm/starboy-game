@@ -164,14 +164,14 @@ if game_mode == "Play Against Computer":
         if st.session_state['yards'] >= 4:
             st.balloons()  # 🎈 Streamlit confetti effect
             st.success(f"🏆 **TOUCHDOWN! {st.session_state['player1_name']} scored!** 🎉🔥")
-            st.audio("https://your-touchdown-sound.mp3", autoplay=True)  # Touchdown Sound
+            #st.audio("https://your-touchdown-sound.mp3", autoplay=True)  # Touchdown Sound
             st.image("https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExemdjNWNtbHF6YXhtbjlqcHk5NTZycTM1d2YwZjl2czJhem0zYWx4diZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oriOaneEKyhAViU5G/giphy.gif", use_column_width=True)  # Celebration GIF
 
         # Check for Failed Touchdown (No more attempts left)
         elif len(st.session_state['player1_results']) == 3 and 'Complete' not in st.session_state['player1_results']:
             st.error("😞 **FAILED TOUCHDOWN! No more attempts left.**")
             st.image("https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExbGEzcm4zbHp2ZzI4d3ByNzA0YnFnMm42d2swMHRjN3E1eTVneTVsbCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l2JhsXfROlxQOryZG/giphy.gif", use_column_width=True)
-            st.audio("https://your-fail-sound.mp3", autoplay=True)
+            #st.audio("https://your-fail-sound.mp3", autoplay=True)
 
         # Display current score
         st.write("### 🏆 Live Scoreboard")
@@ -207,14 +207,14 @@ elif game_mode == "Play with a Friend":
         if st.session_state['yards'] >= 4:
             st.balloons()  # 🎈 Confetti effect
             st.success(f"🏆 **TOUCHDOWN! {st.session_state['player1_name']} scored!** 🎉🔥")
-            st.audio("https://your-touchdown-sound.mp3", autoplay=True)
+            #st.audio("https://your-touchdown-sound.mp3", autoplay=True)
             st.image("https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExemdjNWNtbHF6YXhtbjlqcHk5NTZycTM1d2YwZjl2czJhem0zYWx4diZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oriOaneEKyhAViU5G/giphy.gif", use_column_width=True)
 
         # Failed Touchdown Message
         elif len(st.session_state['player1_results']) == 3 and 'Complete' not in st.session_state['player1_results']:
             st.error("😞 **FAILED TOUCHDOWN! No more attempts left.**")
             st.image("https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExbGEzcm4zbHp2ZzI4d3ByNzA0YnFnMm42d2swMHRjN3E1eTVneTVsbCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l2JhsXfROlxQOryZG/giphy.gif", use_column_width=True)
-            st.audio("https://your-fail-sound.mp3", autoplay=True)
+            #st.audio("https://your-fail-sound.mp3", autoplay=True)
 
             # Display current score
             st.write("### 🏆 Live Scoreboard")
@@ -256,21 +256,21 @@ if len(st.session_state['player1_results']) == 3 and len(st.session_state['playe
         if player1_touchdowns > player2_touchdowns:
             st.image("https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExa2NxOGk4YXN6NnBzYW0yM3FtMnp5Nm9wYmw5YmpsOGRuOWZ2dTFodCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0MYJwo89pS4sOHHW/giphy.gif", use_column_width=True)
             st.success(f"🎉 **{p1_name} WINS!** 🏆💪")
-            st.error(f"😢 **Boohoo {p2_name}, go cry about it!**")
+            st.error(f"😭🤧😚 **Boohoo {p2_name}, go cry about it!**")
 
         elif player2_touchdowns > player1_touchdowns:
             st.image("https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExa2NxOGk4YXN6NnBzYW0yM3FtMnp5Nm9wYmw5YmpsOGRuOWZ2dTFodCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0MYJwo89pS4sOHHW/giphy.gif", use_column_width=True)
             st.success(f"🎉 **{p2_name} WINS!** 🏆💪")
-            st.error(f"😢 **Boohoo {p1_name}, go cry about it!**")
+            st.error(f"😭🤧😚 **Boohoo {p1_name}, go cry about it!**")
 
         else:
             player1_marks = final_score_p1.count("'")
             player2_marks = final_score_p2.count("'")
 
             if player1_marks > player2_marks:
-                st.success(f"**{p1_name} wins! It was a close one!**")
+                st.success(f"🎉 **{p1_name} WINS!** 🏆💪 It was a close one!**")
             elif player2_marks > player1_marks:
-                st.success(f"**{p2_name} wins! It was a close one!**")
+                st.success(f"🎉 **{p2_name} WINS!** 🏆💪 It was a close one!**")
             else:
-                st.warning("🤝 **It's a tie!**")
+                st.warning("🤝 **It's a tie! Stop being boring and play like pros next time!**")
 
