@@ -53,12 +53,29 @@ def play_round(offense_player, defense_player, is_computer=False):
         if is_computer and offense_player == 'Computer':
             offense_choice = computer_strategy(yards)
         else:
-            offense_choice = int(input(f"{offense_player}, pick your number (1-4): "))
+            while True:
+                try:
+                    offense_choice = int(input(f"{offense_player}, pick your number (1-4): "))
+                    if 1 <= offense_choice <= 4:
+                        break
+                    else:
+                        print("Invalid choice. Please pick a number between 1 and 4.")
+                except ValueError:
+                    print("Invalid input. Please enter a number.")
+
 
         if is_computer and defense_player == 'Computer':
             defense_choice = computer_defense_strategy(yards)
         else:
-            defense_choice = int(input(f"{defense_player}, pick your number (1-4): "))
+                while True:
+                    try:
+                        defense_choice = int(input(f"{defense_player}, pick your number (1-4): "))
+                        if 1 <= defense_choice <= 4:
+                            break
+                        else:
+                            print("Invalid choice. Please pick a number between 1 and 4.")
+                    except ValueError:
+                        print("Invalid input. Please enter a number.")
 
         result = get_play_result(offense_choice, defense_choice)
         print(f"Offense picked {offense_choice}, Defense picked {defense_choice}. Result: {result}")
@@ -118,11 +135,37 @@ def computer_defense_strategy(opponent_yards):
     return defense_choice
 
 def calculate_final_score(results, opponent_results):
+    if 'k' in results:
+        return 'k'
     touchdowns = sum(1 for result in results if '1' in result)
     marks = sum(result.count("'") for result in results if 'p' not in result)
     opponent_interception_marks = sum(result.count("'") for result in opponent_results if result.startswith('p'))
     total_marks = marks + opponent_interception_marks
     return f"{touchdowns}" + "'" * total_marks
+
+def should_kneel(player_results, opponent_results):
+    player_score = calculate_final_score(player_results, opponent_results)
+    opponent_score = calculate_final_score(opponent_results, player_results)
+
+    # Split the score into touchdowns and marks
+    player_touchdowns = int(player_score[0])
+    player_marks = player_score.count("'")
+
+    opponent_touchdowns = int(opponent_score[0])
+    opponent_marks = opponent_score.count("'")
+
+    # Even if the player gets a touchdown with maximum apostrophes, can they win?
+    # Maximum score for one round is 1 with two apostrophes: 1''
+    potential_touchdowns = player_touchdowns + 1
+    potential_marks = player_marks + 2  # Max apostrophes possible in one round
+
+    if potential_touchdowns < opponent_touchdowns:
+        return True  # Can't catch up in touchdowns
+    elif potential_touchdowns == opponent_touchdowns and potential_marks < opponent_marks:
+        return True  # Same touchdowns but can't surpass in apostrophes
+    else:
+        return False  # Still a chance to win
+
 
 def main():
     print("Welcome to the Football Probability Game!")
@@ -143,10 +186,22 @@ def main():
     # Each player plays three rounds as offense
     for i in range(3):
         print(f"\n{player1}'s turn as offense (Round {i+1})")
-        player1_results += play_round(player1, player2, is_computer)
+        if i == 2 and should_kneel(player1_results, player2_results):
+            print(f"{player1} cannot win and kneels.")
+            player1_results.append('k')
+            # Player 2 wins immediately if Player 1 kneels
+            break
+        else:
+            player1_results += play_round(player1, player2, is_computer)
 
         print(f"\n{player2}'s turn as offense (Round {i+1})")
-        player2_results += play_round(player2, player1, is_computer)
+        if i == 2 and should_kneel(player2_results, player1_results):
+            print(f"{player2} cannot win and kneels.")
+            player2_results.append('k')
+            break  # Game ends if Player 2 kneels
+        else:
+            player2_results += play_round(player2, player1, is_computer)
+
 
     final_score_p1 = calculate_final_score(player1_results, player2_results)
     final_score_p2 = calculate_final_score(player2_results, player1_results)
@@ -154,6 +209,31 @@ def main():
     print(f"\nFinal Scores:")
     print(f"{player1}: {' '.join(player1_results)} → Final Score: {final_score_p1}")
     print(f"{player2}: {' '.join(player2_results)} → Final Score: {final_score_p2}")
+
+    if final_score_p1 == 'k':
+        print(f"\n{player2} wins! {player1} had to kneel :(")
+    elif final_score_p2 == 'k':
+        print(f"\n{player1} wins! {player2} had to kneel :(")
+    else:
+        # Compare touchdowns first
+        player1_touchdowns = int(final_score_p1[0])
+        player2_touchdowns = int(final_score_p2[0])
+
+        if player1_touchdowns > player2_touchdowns:
+            print(f"\n{player1} wins! Boohoo {player2}, go cry about it!")
+        elif player2_touchdowns > player1_touchdowns:
+            print(f"\n{player2} wins! Boohoo {player1}, go cry about it!")
+        else:
+            # If touchdowns are tied, compare apostrophes (marks)
+            player1_marks = final_score_p1.count("'")
+            player2_marks = final_score_p2.count("'")
+
+            if player1_marks > player2_marks:
+                print(f"\n{player1} wins! It was a close one!")
+            elif player2_marks > player1_marks:
+                print(f"\n{player2} wins! It was a close one!")
+            else:
+                print("\nIt's a tie!")
 
 
 if __name__ == "__main__":
