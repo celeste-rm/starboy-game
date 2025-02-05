@@ -70,14 +70,20 @@ def switch_turn():
     st.session_state['yards'] = 0
     st.session_state['attempts'] = 0
 
+if 'player1_name' not in st.session_state:
+    st.session_state['player1_name'] = "Player 1"
+if 'player2_name' not in st.session_state:
+    st.session_state['player2_name'] = "Computer"
+
 def reset_game():
     st.session_state['player1_results'] = []
     st.session_state['player2_results'] = []
-    st.session_state['current_turn'] = st.session_state['player1_name']
     st.session_state['yards'] = 0
     st.session_state['attempts'] = 0
+    # Default to player1's turn if names aren't set yet
+    st.session_state['current_turn'] = st.session_state.get('player1_name', "Player 1")
 
-# Initialize session state
+# Initialize session state if not already
 if 'player1_results' not in st.session_state:
     reset_game()
 
@@ -86,7 +92,7 @@ st.title("🌟🏈 Starboy Football Game")
 game_mode = st.radio("Choose your mode:", ("Play Against Computer", "Play with a Friend"))
 
 # Get player names based on mode
-st.session_state['player1_name'] = st.text_input("Enter Player 1's name:", value="Player 1")
+st.session_state['player1_name'] = st.text_input("Enter Player 1's name:", value=st.session_state['player1_name'])
 if game_mode == "Play with a Friend":
     st.session_state['player2_name'] = st.text_input("Enter Player 2's name:", value="Player 2")
 else:
