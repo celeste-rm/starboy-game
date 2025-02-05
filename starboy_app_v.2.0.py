@@ -1,6 +1,40 @@
 import streamlit as st
 import random
 
+st.markdown(
+    """
+    <style>
+    .stApp {
+        background-color: #87CEEB; /* Light blue color */
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+st.markdown("""
+<style>
+div.stButton > button:first-child {
+    background-color: blue;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 10px;
+    padding: 10px;
+    border: 2px solid black;
+    transition: all 0.3s ease-in-out; /* Smooth hover effect */
+}
+
+div.stButton > button:first-child:hover {
+    background-color: navy; /* Hover color */
+    color: gold;
+    transform: scale(1.3); /* Slight zoom effect */
+    border: 2px solid white;
+}
+</style>
+""", unsafe_allow_html=True)
+
+
 # Define the probability matrix and interception chances
 probabilities = {
     (1, 1): {'complete': 40, 'intercept': 0},
@@ -89,10 +123,18 @@ def computer_defense_strategy(opponent_yards):
     return random.choice(predicted_choices)
 
 # Streamlit UI Starts Here
-st.title("🏈 Football Probability Game")
+st.title("🌟🏈 Starboy Football Game")
 
 # Game Setup
 game_mode = st.radio("Choose your mode:", ("Play Against Computer", "Play with a Friend"))
+
+if 'player1_name' not in st.session_state:
+    st.session_state['player1_name'] = ""
+if 'player2_name' not in st.session_state:
+    st.session_state['player2_name'] = ""
+
+st.session_state['player1_name'] = st.text_input("Enter Player 1's name:", value="Player 1")
+st.session_state['player2_name'] = st.text_input("Enter Player 2's name:", value="Player 2")
 
 # Initialize session state
 if 'player1_results' not in st.session_state:
@@ -115,18 +157,36 @@ if game_mode == "Play Against Computer":
         st.session_state['yards'] += offense_choice if result == 'Complete' else 0
         st.session_state['player1_results'].append(result)
 
-        st.write(f"Offense picked **{offense_choice}**, Defense (Computer) picked **{defense_choice}**.")
-        st.write(f"Result: **{result}**")
+        st.write(f"🏈 **Offense picked {offense_choice}, Defense picked {defense_choice}.**")
+        st.write(f"🔥 **Result:** {result}")
+
+        # Check for Touchdown
+        if st.session_state['yards'] >= 4:
+            st.balloons()  # 🎈 Streamlit confetti effect
+            st.success(f"🏆 **TOUCHDOWN! {st.session_state['player1_name']} scored!** 🎉🔥")
+            st.audio("https://your-touchdown-sound.mp3", autoplay=True)  # Touchdown Sound
+            st.image("https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExemdjNWNtbHF6YXhtbjlqcHk5NTZycTM1d2YwZjl2czJhem0zYWx4diZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oriOaneEKyhAViU5G/giphy.gif", use_column_width=True)  # Celebration GIF
+
+        # Check for Failed Touchdown (No more attempts left)
+        elif len(st.session_state['player1_results']) == 3 and 'Complete' not in st.session_state['player1_results']:
+            st.error("😞 **FAILED TOUCHDOWN! No more attempts left.**")
+            st.image("https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExbGEzcm4zbHp2ZzI4d3ByNzA0YnFnMm42d2swMHRjN3E1eTVneTVsbCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l2JhsXfROlxQOryZG/giphy.gif", use_column_width=True)
+            st.audio("https://your-fail-sound.mp3", autoplay=True)
 
         # Display current score
-        current_score = calculate_final_score(st.session_state['player1_results'], [])
-        st.write(f"**Current Score:** {player_name}: {current_score}")
+        st.write("### 🏆 Live Scoreboard")
+        st.metric(label=f"{st.session_state['player1_name']}'s Score", value=calculate_final_score(st.session_state['player1_results'], st.session_state['player2_results']))
+        st.metric(label=f"{st.session_state['player2_name']}'s Score", value=calculate_final_score(st.session_state['player2_results'], st.session_state['player1_results']))
+
+        # Progress Bar
+        yard_progress = min(st.session_state['yards'] / 5, 1.0)  # Normalize to percentage
+        st.progress(yard_progress)
 
 # Playing with a Friend
 elif game_mode == "Play with a Friend":
     st.write("Share this link with your friend and take turns making your picks!")
 
-    player_role = st.radio("Are you Player 1 or Player 2?", ("Player 1", "Player 2"))
+    player_role = st.radio("Are you Player 1 or Player 2?", (st.session_state['player1_name'], st.session_state['player2_name']))
 
     if player_role == "Player 1":
         offense_choice = st.number_input("Player 1, pick your number (1-4):", min_value=1, max_value=4, step=1)
@@ -140,12 +200,30 @@ elif game_mode == "Play with a Friend":
             result = get_play_result(offense_choice, defense_choice)
             st.session_state['player1_results'].append(result)
 
-            st.write(f"Player 1 picked **{offense_choice}**, Player 2 picked **{defense_choice}**.")
-            st.write(f"Result: **{result}**")
+            st.write(f"🏈 **Offense picked {offense_choice}, Defense picked {defense_choice}.**")
+            st.write(f"🔥 **Result:** {result}")
+
+        # Touchdown Message
+        if st.session_state['yards'] >= 4:
+            st.balloons()  # 🎈 Confetti effect
+            st.success(f"🏆 **TOUCHDOWN! {st.session_state['player1_name']} scored!** 🎉🔥")
+            st.audio("https://your-touchdown-sound.mp3", autoplay=True)
+            st.image("https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExemdjNWNtbHF6YXhtbjlqcHk5NTZycTM1d2YwZjl2czJhem0zYWx4diZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oriOaneEKyhAViU5G/giphy.gif", use_column_width=True)
+
+        # Failed Touchdown Message
+        elif len(st.session_state['player1_results']) == 3 and 'Complete' not in st.session_state['player1_results']:
+            st.error("😞 **FAILED TOUCHDOWN! No more attempts left.**")
+            st.image("https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExbGEzcm4zbHp2ZzI4d3ByNzA0YnFnMm42d2swMHRjN3E1eTVneTVsbCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l2JhsXfROlxQOryZG/giphy.gif", use_column_width=True)
+            st.audio("https://your-fail-sound.mp3", autoplay=True)
 
             # Display current score
-            current_score_p1 = calculate_final_score(st.session_state['player1_results'], st.session_state['player2_results'])
-            st.write(f"**Current Score:** Player 1: {current_score_p1}")
+            st.write("### 🏆 Live Scoreboard")
+            st.metric(label=f"{st.session_state['player1_name']}'s Score", value=calculate_final_score(st.session_state['player1_results'], st.session_state['player2_results']))
+            st.metric(label=f"{st.session_state['player2_name']}'s Score", value=calculate_final_score(st.session_state['player2_results'], st.session_state['player1_results']))
+
+            # Progress Bar
+            yard_progress = min(st.session_state['yards'] / 5, 1.0)  # Normalize to percentage
+            st.progress(yard_progress)
 
         else:
             st.warning("Both players need to make a choice!")
@@ -155,30 +233,44 @@ if len(st.session_state['player1_results']) == 3 and len(st.session_state['playe
     final_score_p1 = calculate_final_score(st.session_state['player1_results'], st.session_state['player2_results'])
     final_score_p2 = calculate_final_score(st.session_state['player2_results'], st.session_state['player1_results'])
 
+    p1_name = st.session_state['player1_name']
+    p2_name = st.session_state['player2_name']
+
     st.write(f"### Final Scores:")
-    st.write(f"Player 1: {final_score_p1}")
-    st.write(f"Player 2: {final_score_p2}")
+    st.write(f"**{p1_name}:** {final_score_p1}")
+    st.write(f"**{p2_name}:** {final_score_p2}")
+
 
     # Determine Winner
     if final_score_p1 == 'k':
-        st.write("**Player 2 wins! Player 1 had to kneel.**")
+        st.image("https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExbXNrMHV2azUxcTl1NmQ4d3UwOW9hbHIyZjN6ajlzZGVkaGUzcjByaCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/bf6GQkB3wcow9OPw40/giphy.gif", use_column_width=True)
+        st.error(f"😢 **{p1_name} had to kneel!** {p2_name} wins! 🏆")
+
     elif final_score_p2 == 'k':
-        st.write("**Player 1 wins! Player 2 had to kneel.**")
+        st.image("https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExbXNrMHV2azUxcTl1NmQ4d3UwOW9hbHIyZjN6ajlzZGVkaGUzcjByaCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/bf6GQkB3wcow9OPw40/giphy.gif", use_column_width=True)
+        st.error(f"😢 **{p2_name} had to kneel!** {p1_name} wins! 🏆")
     else:
         player1_touchdowns = int(final_score_p1[0])
         player2_touchdowns = int(final_score_p2[0])
 
         if player1_touchdowns > player2_touchdowns:
-            st.write("**Player 1 wins! Boohoo Player 2, go cry about it!**")
+            st.image("https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExa2NxOGk4YXN6NnBzYW0yM3FtMnp5Nm9wYmw5YmpsOGRuOWZ2dTFodCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0MYJwo89pS4sOHHW/giphy.gif", use_column_width=True)
+            st.success(f"🎉 **{p1_name} WINS!** 🏆💪")
+            st.error(f"😢 **Boohoo {p2_name}, go cry about it!**")
+
         elif player2_touchdowns > player1_touchdowns:
-            st.write("**Player 2 wins! Boohoo Player 1, go cry about it!**")
+            st.image("https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExa2NxOGk4YXN6NnBzYW0yM3FtMnp5Nm9wYmw5YmpsOGRuOWZ2dTFodCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0MYJwo89pS4sOHHW/giphy.gif", use_column_width=True)
+            st.success(f"🎉 **{p2_name} WINS!** 🏆💪")
+            st.error(f"😢 **Boohoo {p1_name}, go cry about it!**")
+
         else:
             player1_marks = final_score_p1.count("'")
             player2_marks = final_score_p2.count("'")
 
             if player1_marks > player2_marks:
-                st.write("**Player 1 wins! It was a close one!**")
+                st.success(f"**{p1_name} wins! It was a close one!**")
             elif player2_marks > player1_marks:
-                st.write("**Player 2 wins! It was a close one!**")
+                st.success(f"**{p2_name} wins! It was a close one!**")
             else:
-                st.write("**It's a tie!**")
+                st.warning("🤝 **It's a tie!**")
+
